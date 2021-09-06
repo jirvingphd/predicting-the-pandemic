@@ -14,7 +14,7 @@ today = dt.date.today().strftime("%m-%d-%Y")
 
 def load_raw_ts_file(jhu_data_zip, save_fpath,file = 'RAW_us_confirmed_cases.csv',
                       
-                     mapper_path='data/state_names_to_codes_map.joblib',
+                     mapper_path='reference_data/state_names_to_codes_map.joblib',
                     verbose=True):
     
     if verbose: 
@@ -172,7 +172,12 @@ class ColumnDict(dict):
 
 ##################################################################################
 def FULL_WORKFLOW(save_state_csvs=False,fpath_raw = r"./data_raw/",
-                  fpath_clean = r"./data/", fpath_reference = r"./reference_data/"):
+                  fpath_clean = r"./data/", fpath_reference = r"./reference_data/",
+                  merge_hospital_data=False,
+                  new_to_final_names = {'Deaths':'Deaths',
+                                        'Cases':'Cases',
+                                        'total_adult_patients_hospitalized_confirmed_covid':'Hospitalized Currently',
+                                        'adult_icu_bed_covid_utilization_numerator':'ICU-Covid Currently'}):
     """Run entire data acquisiton process
 
     Returns:
@@ -217,14 +222,14 @@ def FULL_WORKFLOW(save_state_csvs=False,fpath_raw = r"./data_raw/",
     df_metadata.dropna(subset=['State_Code'], inplace=True)
 
     ## Saving county info
-    df_metadata.to_csv(os.path.join(fpath_clean,"us_metadata_counties.csv"),index=False)
+    df_metadata.to_csv(os.path.join(fpath_reference,"us_metadata_counties.csv"),index=False)
 
 
     ## Saving a states-only version with aggregated populations and mean lat/long
     df_state_metadata = df_metadata.groupby('Province_State',as_index=False).agg({'Population':'sum',
                                                 "Lat":'mean',"Long":"mean"})
     df_state_metadata.insert(1,'State_Code',df_state_metadata['Province_State'].map(state_to_abbrevs_map))
-    df_state_metadata.to_csv(os.path.join(fpath_clean,"us_metadata_states.csv"),index=False)
+    df_state_metadata.to_csv(os.path.join(fpath_reference,"us_metadata_states.csv"),index=False)
 
 
     ## Making and saving remapping dicts
@@ -232,11 +237,11 @@ def FULL_WORKFLOW(save_state_csvs=False,fpath_raw = r"./data_raw/",
     state_to_abbrevs_meta = dict(zip(df_state_metadata['Province_State'],df_state_metadata['State_Code']))
     abbrev_to_state_meta = dict(zip(df_state_metadata['State_Code'],df_state_metadata['Province_State']))
 
-    joblib.dump(state_to_abbrevs_meta, os.path.join(fpath_clean,'state_names_to_codes_map.joblib'))
-    joblib.dump(abbrev_to_state_meta, os.path.join(fpath_clean,'state_codes_to_names_map.joblib'))
+    joblib.dump(state_to_abbrevs_meta, os.path.join(fpath_reference,'state_names_to_codes_map.joblib'))
+    joblib.dump(abbrev_to_state_meta, os.path.join(fpath_reference,'state_codes_to_names_map.joblib'))
 
     ## save mapper fo state to code for function
-    mapper_path = os.path.join(fpath_clean,'state_names_to_codes_map.joblib')
+    mapper_path = os.path.join(fpath_reference,'state_names_to_codes_map.joblib')
     mapper_path
     
     
@@ -292,7 +297,7 @@ def FULL_WORKFLOW(save_state_csvs=False,fpath_raw = r"./data_raw/",
     df_hospitals.reset_index().to_csv(os.path.join(fpath_raw,'hospital_data.csv'))
 
     df_hospitals#.loc['MD',['inpatient_beds_utilization']].plot()
-    joblib.dump(COLUMNS,os.path.join(fpath_clean,'COLUMNS.joblib'))
+    joblib.dump(COLUMNS,os.path.join(fpath_reference,'COLUMNS.joblib'))
     
     #### combine all data
     df = pd.merge(df_daily_cases_deaths_ts,df_hospitals.reset_index())
@@ -301,8 +306,9 @@ def FULL_WORKFLOW(save_state_csvs=False,fpath_raw = r"./data_raw/",
     
     
     ## Saving State CSVs
-    DATA_FOLDER = os.path.join(fpath_clean,'state_data/')
-    os.makedirs(DATA_FOLDER,exist_ok=True)
+    if save_state_csvs:
+        DATA_FOLDER = os.path.join(fpath_clean,'state_data/')
+        os.makedirs(DATA_FOLDER,exist_ok=True)
 
     ## make STATES dict
     unique_states = df['State_Code'].unique()
@@ -325,7 +331,45 @@ def FULL_WORKFLOW(save_state_csvs=False,fpath_raw = r"./data_raw/",
     print(f"\t{os.path.join(fpath_clean,'combined_us_states_full_data.csv')}")
     print(f"\t{os.path.join(fpath_clean,'STATE_DICT.joblib')}")
     
-    return df_states, STATES
+    if merge_hospital_data:
+        ## saving final version of dataset
+        FINAL_STATES = {} #pd.DataFrame(index=date_index)
+
+        for state, state_df in STATES.items():
+            
+            state_df = state_df[list(new_to_final_names.keys())].copy().sort_index()
+            state_df = state_df.rename(new_to_final_names,axis=1)
+            
+            ## Renamaed columns to process
+            hospital_cols = ['Hospitalized Currently','ICU-Covid Currently']
+            cumulative_cols = ['Deaths','Cases'] # cols to diff
+            
+            ## fill hospital cols with 0
+            state_df[hospital_cols] = state_df[hospital_cols].fillna(0)
+
+            for col in cumulative_cols:
+                state_df[f"{col}-New"] = state_df[col].diff().fillna(0)
+            state_df
+
+        #     state_df.columns = [f"{state}: {c}" for c in state_df.columns]
+            FINAL_STATES[state]= state_df.copy()
+
+
+        DF = pd.concat(FINAL_STATES)
+
+        ## Saving Final Combined DataFrame as both comnpressed csv and pickle
+        fpath_final_df_csv = os.path.join(fpath_clean,'FINAL_STATES.csv.gz')
+        fpath_final_df_pickle = fpath_final_df_csv.replace('.csv.gz','.pickle')
+
+        DF.to_csv( fpath_final_df_csv,compression='gzip')
+        print(f"[i] Final joined data (DF) saved as {fpath_final_df_csv}")
+
+        DF.to_pickle( fpath_final_df_pickle)
+        print(f"[i] Final joined data (DF) saved as {fpath_final_df_pickle}")
+
+        return DF,FINAL_STATES
+    else:
+        return df_states, STATES
 
 
 
