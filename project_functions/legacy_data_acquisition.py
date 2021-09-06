@@ -346,7 +346,7 @@ class CovidTrackingProject(BaselineData):
         url = self.urls[key]
         
         ## Get and load csv
-        data = self.get_csv_save_load(url,fpath= os.path.join(self.base_folder,f"{key}.csv'"),
+        data = self.get_csv_save_load(url,fpath= os.path.join(self.base_folder,f"{key}.csv"),
                                       read_kws=read_kws)
         
         ## Save to data dictionary
