@@ -1,6 +1,7 @@
 import streamlit as st
 
 from fsds.imports import *
+import pandas as pd
 
 import os,glob,sys,joblib,zipfile,json
 import re
@@ -22,6 +23,7 @@ import statsmodels.api as sms
 import statsmodels.tsa.api as tsa
 from pmdarima import auto_arima
 import project_functions as fn
+# from fsds import pandemic as fn
 import os,json,glob
 
 with open("FILE_DIRECTORY.json") as f:
@@ -51,14 +53,17 @@ st.write('Planning for the Pandemic')
 
 
 state_name = st.sidebar.selectbox('Select State', list(STATES.keys()))
-col = STATES["NY"].columns.to_list()
+col = st.sidebar.selectbox("Select statistic",STATES["NY"].columns.to_list())
 df_state = STATES[state_name].copy()
 
 # col = 'Cases-New'
 ts = df_state[col].copy()
 ax = ts.plot(title=f"{state_name}-{col}");
 ax.set_ylabel(col)
-plt.show()
+st.pyplot(ax.get_figure())# plt.show()
+
+
+model_q = st.sidebar.button('Run model?', on_click= fn.modeling.make_timeseries_model,args=(STATES,state_name,col))
 
 
 

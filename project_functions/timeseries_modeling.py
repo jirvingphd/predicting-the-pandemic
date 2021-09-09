@@ -3,9 +3,98 @@
 ## Lab Function
 # from statsmodels.tsa.stattools import adfuller
 import statsmodels.tsa.api as tsa
+import numpy as  np
 import pandas as pd
 import matplotlib.pyplot as plt
 from IPython.display import display
+
+
+def remove_outliers_ts(ts,threshold_type='raw',threshold=100, n_diff=1):
+    ## saving deltas 
+    deltas  = ts.diff(n_diff)
+    
+    
+    ## Criterion
+    if threshold_type=='raw':
+        idx_outliers = deltas.abs()>threshold
+        
+#     elif threshold_type :
+#         pass
+    else:
+        raise Exception("threshold_kinds are not yet implemented")
+        pass
+    ## SSaving outleirs
+    outliers = deltas[idx_outliers]
+
+
+    ## Filling in outliers
+    ts.loc[outliers.index] = np.nan
+    ts_out = ts.interpolate()
+    
+    return ts_out
+     
+    
+
+
+
+
+def make_timeseries_model(STATES,state = "MD",col = 'Cases-New',
+                          start_date='08-2020',
+                         remove_outliers=True,threshold=100,
+                         plot=True):
+    ## Slicing out state df for index dates 
+    df_state = STATES[state].loc[start_date:].copy()
+    df_state = df_state.resample('D').sum()
+    ts = df_state[col].copy()
+
+    ## Outlier removal 
+    if remove_outliers:
+        ## saving deltas 
+        deltas  = ts.diff()
+
+        ## SSaving outleirs
+        outliers = deltas[deltas.abs()>threshold]
+
+
+        ## Filling in outliers
+        ts.loc[outliers.index] = np.nan
+        ts.interpolate(inplace=True)
+    
+    if plot:
+        ax = ts.plot(title=f"{state}-{col}");
+        ax.set_ylabel(col)
+        display(ax.get_figure())
+        
+        
+
+    from pmdarima import auto_arima
+    train,test = train_test_split_ts(ts,split_index=-30)
+    
+    auto_model = auto_arima(train,m=7,trace=True,D=1,
+                            start_p=0, start_q=0,
+                            start_P=0, start_Q=0)
+    display(auto_model.summary())
+        
+    model = tsa.SARIMAX(train, order=auto_model.order, 
+                    seasonal_order =auto_model.seasonal_order,
+                    enforce_invertibility=False,
+                    enforce_stationarity=False, 
+                    freq='D').fit()
+
+    evaluate_model(model,train,test,last_n_lags=180)
+    
+    
+    model = tsa.SARIMAX(ts,order=auto_model.order, 
+                    seasonal_order =auto_model.seasonal_order,
+                    enforce_invertibility=False,
+                    enforce_stationarity=False, 
+                    freq='D').fit()
+    diagnose_model(model)
+    plot_forecast(model, ts)
+    
+    return ts, model
+    
+    
 
 def adfuller_test_df(ts,index=['AD Fuller Results']):
     """Returns the AD Fuller Test Results and p-values for the null hypothesis
