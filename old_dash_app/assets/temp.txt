@@ -1,0 +1,131 @@
+/* *:not(#svg-container,#graph){
+    font-family:serif;
+    background-color: black;
+    color:white;
+} */
+
+#graph {
+    width:90%;
+    display:block;
+    margin: auto;
+    /* font-family: serif; */
+    /* border:2px solid darkred; */
+
+}
+
+
+#outerbox{
+    margin: auto;
+    display:block;
+    background-color: black;
+    color:white;
+    font-family:serif;
+    font-weight: bold;
+    width: 90%;
+    border:10px solid darkred;
+
+}
+*not(#graph){
+    margin:auto;
+    font-family:serif;
+    background-color:black;
+    color:white;
+}
+
+.Select-control{
+    background-color: black;
+    border:1px solid lightskyblue;
+    display: block;
+}
+
+.Select-value-label{
+    color:white;
+}
+
+#react-select-2--value-item{
+    color:white;
+    background-color: black;
+}
+
+
+
+h1{
+    text-align: center;
+    margin: auto;
+    font-size: 3em;
+    /* border:2px solid  yellow; */
+    padding:1.3rem;
+    display: block;
+}
+
+h2{
+    margin-left:20px;
+    
+}
+
+#dash-app-content{
+    background-color: black;
+}
+
+#app{
+    font-weight:70%;
+    background-color: black;
+    /* border:10px solid darkred; */
+    padding:3px;
+    /* display:block; */
+    width:90%;
+    margin:auto;
+}
+
+
+
+#menu{
+    display:box;
+    background-color: black;
+    /* border:3px solid darkred; */
+    width:90%;
+    padding:10px;
+    margin: auto;
+
+}
+
+#case_type_menu {
+    display:box;
+    margin:20px;
+    padding:20px;
+    border:2px solid darkred;
+
+    padding-bottom:3px;
+}
+#choose_cases{
+    /* margin:auto; */
+    /* padding:10px; */
+    display: inline-block;
+    width:49%;
+}
+
+
+#choose_new{
+    display: inline-block;
+    /* border: 1px solid lightskyblue; */
+    /* margin:auto; */
+    text-align:left;
+    /* padding:10px; */
+    width:49%;
+}
+
+#choose_states{
+    width:90%;
+    padding-top:20px;
+    display: block;
+}
+
+#graph {
+    width:90%;
+    display:inline-block;
+    margin: auto;
+    /* font-family: serif; */
+    border:2px solid darkred;
+
+}
+

@@ -1,0 +1,149 @@
+/* *:not(#svg-container,#graph){
+    font-family:serif;
+    background-color:#111111;
+    color:gray;
+
+} */
+
+#world-section{
+    padding:2rem;
+    border-top:5px solid whitesmoke;
+
+}
+
+
+h1{
+    border-bottom: 2px dashed white;
+    display:block;
+    width:80%;
+    text-align: center;
+    padding:1.2em;
+}
+/* h1{
+    color:white;
+    text-align: center;
+    margin: auto;
+    font-size: 3em;
+    border-bottom:5px solid whitesmoke;
+
+    padding:1.5rem;
+    width:80%;
+    display: block;
+} */
+
+#graph {
+    width:90%;
+    display:flexbox;
+    margin: auto;
+    padding-left: 10%;
+
+
+}
+
+#map{
+    display:block;
+    width:90%;
+    margin:auto;
+    height:200%;
+}
+#outerbox{
+    margin: auto;
+    display:block;
+    background-color: #111111;
+    color:white;
+    font-family:serif;
+    font-weight: bold;
+    width: 90%;
+    border:10px solid darkred;
+
+}
+
+.Select-control{
+    background-color: #111111;
+    border:1px solid lightskyblue;
+    display: block;
+}
+
+.Select-value-label{
+    color:white;
+}
+
+#react-select-2--value-item{
+    color:white;
+    background-color: #111111;
+}
+
+
+
+h2{
+    margin-left:20px;
+    color:white;
+    
+}
+
+#dash-app-content{
+    background-color: #111111;
+    color:white;
+}
+
+#app{
+    font-weight:70%;
+    background-color: #111111;
+    padding:3px;
+    width:90%;
+    margin:auto;
+}
+
+#app-world{
+    font-weight:70%;
+    background-color: #111111;
+    padding:3px;
+    width:90%;
+    margin:auto;
+}
+
+#menu{
+    display:box;
+    background-color: #111111;
+    color:white;
+    width:90%;
+    padding:10px;
+    margin: auto;
+
+}
+
+#case_type_menu,#menu-world {
+    display:box;
+    margin:20px;
+    padding:20px;
+    border:2px solid darkred;
+
+    padding-bottom:3px;
+}
+#choose_cases,#choose-cases-world{
+
+    vertical-align: middle;
+    display: inline-block;
+    width:49%;
+}
+
+
+#choose_new,#choose-new-world{
+    display: inline-block;
+    text-align:left;
+    width:49%;
+}
+
+.dash-dropdown{
+    background-color: #111111;
+    color:gray;
+}
+
+#choose_states,#choose-countries{
+    width:90%;
+    padding-top:20px;
+    display: block;
+    color:gray;
+    background-color: #111111;
+}
+
