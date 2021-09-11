@@ -1,3 +1,10 @@
+## adding project functiojns to path
+import sys,os
+sys.path.append( os.path.abspath('../'))
+## Load Functions and Data
+# from functions import CoronaData,plot_states,get_state_ts,plot_group_ts
+from project_functions.coronavirus_functions import CoronaData,plot_states,get_state_ts,plot_group_ts
+
 # try:
 #     from jupyter_dash import JupyterDash
 # except:
@@ -30,8 +37,7 @@ from dash import html
 from dash.dependencies import Input, Output
 
 
-## Load Functions and Data
-from functions import CoronaData,plot_states,get_state_ts,plot_group_ts
+
 
 ## LOAD DATA AND SAVE DFs
 corona_data = CoronaData(verbose=False,run_workflow=True)

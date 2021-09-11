@@ -14,7 +14,6 @@ pio.templates.default = "plotly_dark"
 plt.rcParams['figure.figsize'] = (12,6)
 pd.set_option('display.max_columns',0)
 # fs.check_package_versions(['statsmodels'],fpath=True)
-RUN_FULL_WORKFLOW=False
 
 
 
@@ -31,21 +30,26 @@ with open("FILE_DIRECTORY.json") as f:
 
 
 
-if RUN_FULL_WORKFLOW:
-    df_states,STATES = fn.data_acquisition.FULL_WORKFLOW(merge_hospital_data=True)
-    ## renaming since merge_hofspital_data=True
-#     DF = df_states.copy()
-#     print(STATES.keys())    
-    
-else:
-    print(f"[i] Using previously downloaded data...")
-    df_states = pd.read_pickle(FPATHS['fpath_final_df_pickle'])
-    
-#     with open(FPATHS['fpath_final_states']) as f:
-    STATES = joblib.load(FPATHS['fpath_final_states'])
-#     df_states = pd.read_csv(os.path.join(fpath_clean,
-#                                          'combined_us_states_full_data.csv'))
-#     STATES = joblib.load(os.path.join(fpath_clean,'STATE_DICT.joblib'))
+# RUN_FULL_WORKFLOW=False
+WORKFLOW_BUTTON = st.button("Fetch new data.",)
+
+
+def load_data(WORKFLOW_BUTTON=False):
+    if WORKFLOW_BUTTON == True:
+        df_states,STATES = fn.data_acquisition.FULL_WORKFLOW(merge_hospital_data=True)
+        ## renaming since merge_hofspital_data=True
+    #     DF = df_states.copy()
+    #     print(STATES.keys())    
+        
+    else:
+        print(f"[i] Using previously downloaded data...")
+        df_states = pd.read_pickle(FPATHS['fpath_final_df_pickle'])
+        
+    #     with open(FPATHS['fpath_final_states']) as f:
+        STATES = joblib.load(FPATHS['fpath_final_states'])
+    return df_states,STATES
+
+df, STATES = load_data(WORKFLOW_BUTTON)
 
 
 

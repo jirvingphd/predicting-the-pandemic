@@ -23,17 +23,28 @@ def make_options(menu_choices):
     return options
 
 
-def load_us_reference_info():
+# def load_us_reference_info():
+#     """Return and save US Reference Data"""
+#     ## Making Master Lookup CSV
+#     import pandas as pd
+#     abbrev = pd.read_csv('Reference Data/united_states_abbreviations.csv')
+#     pop = pd.read_csv('Reference Data/us-pop-est2019-alldata.csv')
+#     us_pop = pop.loc[pop['STATE']>0][['NAME','POPESTIMATE2019']].copy()
+#     us_info = pd.merge(abbrev,us_pop,right_on='NAME',left_on='State',how="inner")
+#     us_info.drop('NAME',axis=1,inplace=True)
+#     return us_info
+def load_us_reference_info(state_abbr_fpath= 'Reference Data/united_states_abbreviations.csv',
+population_fpath= 'Reference Data/us-pop-est2019-alldata.csv'
+                        ):
     """Return and save US Reference Data"""
     ## Making Master Lookup CSV
     import pandas as pd
-    abbrev = pd.read_csv('Reference Data/united_states_abbreviations.csv')
-    pop = pd.read_csv('Reference Data/us-pop-est2019-alldata.csv')
+    abbrev = pd.read_csv(state_abbr_fpath)
+    pop = pd.read_csv(population_fpath)
     us_pop = pop.loc[pop['STATE']>0][['NAME','POPESTIMATE2019']].copy()
     us_info = pd.merge(abbrev,us_pop,right_on='NAME',left_on='State',how="inner")
     us_info.drop('NAME',axis=1,inplace=True)
     return us_info
-
 
 def download_world_pop(data_folder = "Reference Data/",load=True):
     """Downloads world pop zip from kaggle"""
