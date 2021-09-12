@@ -20,9 +20,8 @@ def get_state_ts(df, state_name,
       
     ## Drop original cols
     state_df.drop(orig_cols,axis=1,inplace=True)
-    
-    
-## Return on columns containing ts_cols
+       
+    ## Return on columns containing ts_cols
     if ts_col is not None:
 
         if isinstance(ts_col,str):
