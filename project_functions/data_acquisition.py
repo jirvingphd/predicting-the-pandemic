@@ -173,7 +173,7 @@ class ColumnDict(dict):
 ##################################################################################
 def FULL_WORKFLOW(save_state_csvs=False,fpath_raw = r"./data_raw/",
                   fpath_clean = r"./data/", fpath_reference = r"./reference_data/",
-                  merge_hospital_data=False,
+                  merge_hospital_data=True,
                   new_to_final_names = {'Deaths':'Deaths',
                                         'Cases':'Cases',
                                         'total_adult_patients_hospitalized_confirmed_covid':'Hospitalized Currently',
