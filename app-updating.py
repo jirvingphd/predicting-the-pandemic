@@ -40,10 +40,28 @@ st.markdown("""
 
 ___""")
 
+st.markdown("""## ***Goal***
+- Covid-19 and the various strains that have since emerged has upended modern life and fundamentally changed how we function as a society.
+- Part of what has made it difficult to tackle the pandemic is the differences between states, state laws/policies, and a lack of public understanding about the predictability of the surges in cases. 
+- The goal of this dashboard is to find the provide easy access state-level coronavirus and hospital capacity statistics.
+    - Furthermore, I wanted to provide on-demand timeseries forecasts into the near future for all/any of these statistics.
+""")
+
+
+
+st.markdown('## ***The Data***')
 st.markdown('- This dashboard uses data from several APIs and kaggle datasets. To fetch the lateast data, click the button below.')
 WORKFLOW_BUTTON = st.button("Fetch new data.",)
 
 st.markdown('> Note: it can take up to 2 minutes to download the data.')
+
+st.markdown("""### Sources
+- Coronavirus Data by State- # of Cases/Deaths by State
+    - [Kaggle Dataset: "COVID-19 data from John Hopkins University"](https://www.kaggle.com/antgoldbloom/covid19-data-from-john-hopkins-university) 
+    - Repackaged version of the data from the [official Johns Hopkins Repository](https://github.com/CSSEGISandData/COVID-19)
+- Hospital Hospital & ICU Occupancy Data:
+    - [HealthData.gob Api: "COVID-19 Reported Patient Impact and Hospital Capacity by State Timeseries API"](https://healthdata.gov/Hospital/COVID-19-Reported-Patient-Impact-and-Hospital-Capa/g62h-syeh)
+""")
 # RUN_FULL_WORKFLOW=False
 
 
@@ -64,39 +82,43 @@ def load_data(WORKFLOW_BUTTON=False):
         STATES = joblib.load(FPATHS['fpath_final_states'])
     return df_states,STATES
 
+## load data and save options
 df, STATES = load_data(WORKFLOW_BUTTON)
-
 options_stats= df.drop(['Deaths','Cases'],axis=1).columns.tolist()
 
 st.markdown("___")
-
-st.markdown("## Overview - Comparing All States")
+st.markdown("## ***Overview - Comparing All States***")
 ## plot state map
 n_days = st.slider("PAST N # OF DAYS",value=30,min_value=7,max_value=180)
 col = st.selectbox("Which statistic to map?", options_stats)
 
+# calc dates
 today = dt.date.today()
 end_state = today
 start_date = pd.Timestamp(today) - pd.Timedelta(f'{str(n_days)} days')
 
+## get map
 map = fn.app_functions.plot_map_columns(df,col=col, last_n_days=n_days,
 plot_map=False,return_map=True)
 
+# get just df
 df_rank= fn.app_functions.plot_map_columns(df,col=col, last_n_days=n_days,
 plot_map=False,return_map=False)
 
+# show map
 st.plotly_chart(map)
 
-st.markdown("___")
-
-
 ### Plot same stat for different states
-st.markdown('## Comparing Selected States')
+st.markdown("___")
+st.markdown('## ***Comparing Selected States***')
+
+## select states and stats
 stat_to_compare = st.multiselect("Which statistic to compare?",options_stats,
 default=["Cases-New"])
 states_to_compare = st.multiselect("Which states to compare?",list(STATES.keys()),
 default=["NY",'MD','FL','CA','TX'])
 
+## get and show plot
 plot_df = fn.app_functions.get_states_to_plot(df,state_list=states_to_compare,
             plot_cols=stat_to_compare,
                             agg_func= 'mean',
@@ -109,12 +131,14 @@ st.plotly_chart(px.line(plot_df))
 st.markdown("___")
 
 # ############################## PRIOR TO  09/21 ###########################
-st.markdown('## Timeseries Forecasting by State/Statistic ')
+st.markdown('## ***Timeseries Forecasting by State/Statistic***')
 
+
+default_model_start = today - pd.to_timedelta('365 days')
 state_name = st.selectbox('Select State', list(STATES.keys()))
 col = st.selectbox("Select statistic",options_stats)
 start_date = st.date_input('Start Date for Training Data',
- value=pd.to_datetime('06-2020'))
+ value=default_model_start)#pd.to_datetime('06-2020'))
 
 
 df_state = STATES[state_name].loc[start_date:].copy()
@@ -125,13 +149,16 @@ ax = ts.plot(title=f"{state_name}-{col}");
 ax.set_ylabel(col)
 
 
-model_q = st.button('Run model?', 
-on_click= fn.modeling.make_timeseries_model,args=(STATES,state_name,col))
-
 
 st.pyplot(ax.get_figure())# plt.show()
 
 
+st.markdown("""> **Click "`Run model`" below to start the modeling process for the selected state and statistic.**
+-  [!] Warning: the gridsearch process may take several minutes. Try selecting a more recent start date to increase performance.""")
+
+
+model_q = st.button('Run model.', 
+on_click= fn.modeling.make_timeseries_model,args=(STATES,state_name,col))
 
 
 
