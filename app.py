@@ -1,3 +1,4 @@
+from zlib import compress
 import streamlit as st
 
 from fsds.imports import *
@@ -15,7 +16,7 @@ plt.rcParams['figure.figsize'] = (12,6)
 pd.set_option('display.max_columns',0)
 # fs.check_package_versions(['statsmodels'],fpath=True)
 
-
+import joblib
 
 ### FORECAST SPECIFIC FUNCTIONS
 import statsmodels.api as sms
@@ -43,7 +44,8 @@ def load_data(WORKFLOW_BUTTON=False):
         
     else:
         print(f"[i] Using previously downloaded data...")
-        df_states = pd.read_pickle(FPATHS['fpath_final_df_pickle'])
+        # df_states = pd.read_pickle(FPATHS['fpath_final_df_pickle'])
+        df_states = pd.read_csv(FPATHS['fpath_final_df_csv'],compression='gzip')#joblib.load(FPATHS['final')
         
     #     with open(FPATHS['fpath_final_states']) as f:
         STATES = joblib.load(FPATHS['fpath_final_states'])
