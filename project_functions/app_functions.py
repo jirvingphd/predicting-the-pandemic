@@ -7,7 +7,7 @@ import plotly.io as pio
 import pandas as pd
 
 import numpy as np
-import kaggle
+# import kaggle
 
 
 import datetime as dt
