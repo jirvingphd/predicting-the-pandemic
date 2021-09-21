@@ -55,9 +55,10 @@ def load_data(WORKFLOW_BUTTON=False):
     #     print(STATES.keys())    
         
     else:
-        print(f"[i] Using previously downloaded data...")
-        df_states = pd.read_pickle(FPATHS['fpath_final_df_pickle'])
-        
+        # print(f"[i] Using previously downloaded data...")
+        # df_states = pd.read_pickle(FPATHS['fpath_final_df_pickle'])
+        df_states = pd.read_csv(FPATHS['fpath_final_df_csv'],compression='gzip')#joblib.load(FPATHS['final')
+
     #     with open(FPATHS['fpath_final_states']) as f:
         STATES = joblib.load(FPATHS['fpath_final_states'])
     return df_states,STATES
