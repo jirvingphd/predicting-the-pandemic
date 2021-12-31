@@ -1,7 +1,11 @@
 import streamlit as st
 
-from fsds.imports import *
+# from fsds.imports import *
+
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib as mpl
 
 import os,glob,sys,joblib,zipfile,json
 import datetime as dt
@@ -88,14 +92,20 @@ options_stats= df.drop(['Deaths','Cases'],axis=1).columns.tolist()
 
 st.markdown("___")
 st.markdown("## ***Overview - Comparing All States***")
-## plot state map
-n_days = st.slider("PAST N # OF DAYS",value=30,min_value=7,max_value=180)
-col = st.selectbox("Which statistic to map?", options_stats)
 
 # calc dates
-today = dt.date.today()
-end_state = today
-start_date = pd.Timestamp(today) - pd.Timedelta(f'{str(n_days)} days')
+# today = dt.date.today()
+# end_state = today
+# start_date = pd.Timestamp(today) - pd.Timedelta(f'{str(n_days)} days')
+latest_date = df.droplevel(0).index.max()
+end_date = latest_date
+
+## plot state map
+n_days = st.slider(f"PAST N # OF DAYS BEFORE {latest_date.strftime('%m/%d/%Y')}",value=30,min_value=7,max_value=180)
+col = st.selectbox("Which statistic to map?", options_stats)
+
+start_date = pd.Timestamp(latest_date) - pd.Timedelta(f'{str(n_days)} days')
+
 
 ## get map
 map = fn.app_functions.plot_map_columns(df,col=col, last_n_days=n_days,
@@ -134,7 +144,7 @@ st.markdown("___")
 st.markdown('## ***Timeseries Forecasting by State/Statistic***')
 
 
-default_model_start = today - pd.to_timedelta('365 days')
+default_model_start = latest_date - pd.to_timedelta('365 days')
 state_name = st.selectbox('Select State', list(STATES.keys()))
 col = st.selectbox("Select statistic",options_stats)
 start_date = st.date_input('Start Date for Training Data',
