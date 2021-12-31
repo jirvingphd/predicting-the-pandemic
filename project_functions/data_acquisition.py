@@ -173,7 +173,7 @@ class ColumnDict(dict):
 ##################################################################################
 def FULL_WORKFLOW(save_state_csvs=False,fpath_raw = r"./data_raw/",
                   fpath_clean = r"./data/", fpath_reference = r"./reference_data/",
-                  merge_hospital_data=True, save_joblib=False,
+                  merge_hospital_data=True, save_joblib=True,
                   new_to_final_names = {'Deaths':'Deaths',
                                         'Cases':'Cases',
                                         'total_adult_patients_hospitalized_confirmed_covid':'Hospitalized Currently',
@@ -260,13 +260,15 @@ def FULL_WORKFLOW(save_state_csvs=False,fpath_raw = r"./data_raw/",
     df_cases_deaths_ts = pd.merge(df_cases_ts.reset_index(), df_deaths_ts.reset_index())
     df_cases_deaths_ts
 
-    df_cases_deaths_ts.to_csv(os.path.join(fpath_clean,'us_states_cases_deaths.csv'),index=True)
+    # df_cases_deaths_ts.to_csv(os.path.join(fpath_clean,'us_states_cases_deaths.csv'),index=True)
+    df_cases_deaths_ts.to_csv(os.path.join(fpath_clean,'us_states_cases_deaths.csv.gz'),index=True,compression='gzip')
 
     ## Resample to Daily State Data
     df_daily_cases_deaths_ts = df_cases_deaths_ts.set_index('Date')\
                                 .groupby('State_Code').resample("D")\
                                     .sum().reset_index()
-    df_daily_cases_deaths_ts.to_csv(os.path.join(fpath_clean,'us_states_daily_cases_deaths.csv'),index=True)
+    # df_daily_cases_deaths_ts.to_csv(os.path.join(fpath_clean,'us_states_daily_cases_deaths.csv'),index=True)
+    df_daily_cases_deaths_ts.to_csv(os.path.join(fpath_clean,'us_states_daily_cases_deaths.csv.gz'),compression='gzip',index=True)
     df_daily_cases_deaths_ts
     
     ##### HOSPITAL DATA
