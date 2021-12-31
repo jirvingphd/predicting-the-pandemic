@@ -93,7 +93,8 @@ options_stats= df.drop(['Deaths','Cases'],axis=1).columns.tolist()
 st.markdown("___")
 st.markdown("## ***Overview - Comparing All States***")
 
-# calc dates
+##### MAP CODE
+# calc dates for map
 # today = dt.date.today()
 # end_state = today
 # start_date = pd.Timestamp(today) - pd.Timedelta(f'{str(n_days)} days')
@@ -122,11 +123,18 @@ st.plotly_chart(map)
 st.markdown("___")
 st.markdown('## ***Comparing Selected States***')
 
+
+
 ## select states and stats
 stat_to_compare = st.multiselect("Which statistic to compare?",options_stats,
 default=["Cases-New"])
 states_to_compare = st.multiselect("Which states to compare?",list(STATES.keys()),
 default=["NY",'MD','FL','CA','TX'])
+
+
+## Adding rolling average
+plot_rolling =  st.checkbox('Plot 7 day rolling average instead of daily data.')
+
 
 ## get and show plot
 plot_df = fn.app_functions.get_states_to_plot(df,state_list=states_to_compare,
@@ -135,7 +143,14 @@ plot_df = fn.app_functions.get_states_to_plot(df,state_list=states_to_compare,
                   rename_cols=True,fill_method='interpolate',
                   remove_outliers=False, state_first=True,
                   threshold_type=['0','%'], diagnose=False)
-st.plotly_chart(px.line(plot_df))
+                  
+if plot_rolling==True:
+    plot_df = plot_df.rolling(7).mean()
+    title='7-Day Rolling Average'
+else:
+    title='Raw Daily Data'
+    
+st.plotly_chart(px.line(plot_df,title=title))
 
 
 st.markdown("___")

@@ -173,7 +173,7 @@ class ColumnDict(dict):
 ##################################################################################
 def FULL_WORKFLOW(save_state_csvs=False,fpath_raw = r"./data_raw/",
                   fpath_clean = r"./data/", fpath_reference = r"./reference_data/",
-                  merge_hospital_data=True,
+                  merge_hospital_data=True, save_joblib=False,
                   new_to_final_names = {'Deaths':'Deaths',
                                         'Cases':'Cases',
                                         'total_adult_patients_hospitalized_confirmed_covid':'Hospitalized Currently',
@@ -237,8 +237,9 @@ def FULL_WORKFLOW(save_state_csvs=False,fpath_raw = r"./data_raw/",
     state_to_abbrevs_meta = dict(zip(df_state_metadata['Province_State'],df_state_metadata['State_Code']))
     abbrev_to_state_meta = dict(zip(df_state_metadata['State_Code'],df_state_metadata['Province_State']))
 
-    joblib.dump(state_to_abbrevs_meta, os.path.join(fpath_reference,'state_names_to_codes_map.joblib'))
-    joblib.dump(abbrev_to_state_meta, os.path.join(fpath_reference,'state_codes_to_names_map.joblib'))
+    if save_joblib==True:
+        joblib.dump(state_to_abbrevs_meta, os.path.join(fpath_reference,'state_names_to_codes_map.joblib'))
+        joblib.dump(abbrev_to_state_meta, os.path.join(fpath_reference,'state_codes_to_names_map.joblib'))
 
     ## save mapper fo state to code for function
     mapper_path = os.path.join(fpath_reference,'state_names_to_codes_map.joblib')
@@ -295,9 +296,11 @@ def FULL_WORKFLOW(save_state_csvs=False,fpath_raw = r"./data_raw/",
     df_hospitals = df1[COLUMNS.get_all_values(keep=True)].copy()
     df_hospitals = df_hospitals.set_index(COLUMNS.id_cols).sort_index()
     df_hospitals.reset_index().to_csv(os.path.join(fpath_raw,'hospital_data.csv'))
-
-    df_hospitals#.loc['MD',['inpatient_beds_utilization']].plot()
-    joblib.dump(COLUMNS,os.path.join(fpath_reference,'COLUMNS.joblib'))
+    df_hospitals
+    
+    if save_joblib==True:
+        #.loc['MD',['inpatient_beds_utilization']].plot()
+        joblib.dump(COLUMNS,os.path.join(fpath_reference,'COLUMNS.joblib'))
     
     #### combine all data
     df = pd.merge(df_daily_cases_deaths_ts,df_hospitals.reset_index())
@@ -321,8 +324,8 @@ def FULL_WORKFLOW(save_state_csvs=False,fpath_raw = r"./data_raw/",
             df_state.to_csv(f"{DATA_FOLDER}combined_data_{state}.csv.gz",compression='gzip')   
         STATES[state] = df_state.copy()
 
-
-    joblib.dump(STATES,os.path.join(fpath_clean,'STATE_DICT.joblib'))
+    if save_joblib:
+        joblib.dump(STATES,os.path.join(fpath_clean,'STATE_DICT.joblib'))
     
     end = dt.datetime.now()
     print('[i] Workflow completed.')
