@@ -196,7 +196,7 @@ def FULL_WORKFLOW(save_state_csvs=False,fpath_raw = r"./data_raw/",
 
     print("[i] Retrieving kaggle dataset: antgoldbloom/covid19-data-from-john-hopkins-university")
     ## Download kaggle jhu data and make zipfile object
-    os.system(f'kaggle datasets download -p "{fpath_raw}" -d antgoldbloom/covid19-data-from-john-hopkins-university')
+    os.system(f'kaggle datasets download -p "{fpath_raw}" -d antgoldbloom/covid19-data-from-john-hopkins-university --force')
     jhu_data_zip = zipfile.ZipFile(os.path.join(fpath_raw,'covid19-data-from-john-hopkins-university.zip'))
 
 
