@@ -116,3 +116,4 @@ dmypy.json
 # Pyre type checker
 .pyre/
 data/us_states_*.csv
+.streamlit/secrets.toml

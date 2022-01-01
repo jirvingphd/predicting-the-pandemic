@@ -1,7 +1,11 @@
 import streamlit as st
 
-from fsds.imports import *
+# from fsds.imports import *
+
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib as mpl
 
 import os,glob,sys,joblib,zipfile,json
 import datetime as dt
@@ -86,19 +90,28 @@ def load_data(WORKFLOW_BUTTON=False):
 df, STATES = load_data(WORKFLOW_BUTTON)
 options_stats= df.drop(['Deaths','Cases'],axis=1).columns.tolist()
 
+
+
 st.markdown("___")
 st.markdown("## ***Overview - Comparing All States***")
+
+########## MAP CODE ##########
+# calc dates for map
+# today = dt.date.today()
+# end_state = today
+# start_date = pd.Timestamp(today) - pd.Timedelta(f'{str(n_days)} days')
+latest_date = df.droplevel(0).index.max()
+end_date = latest_date
+
 ## plot state map
-n_days = st.slider("PAST N # OF DAYS",value=30,min_value=7,max_value=180)
+n_days = st.slider(f"PAST N # OF DAYS BEFORE {latest_date.strftime('%m/%d/%Y')}",value=30,min_value=7,max_value=180)
 col = st.selectbox("Which statistic to map?", options_stats)
 
-# calc dates
-today = dt.date.today()
-end_state = today
-start_date = pd.Timestamp(today) - pd.Timedelta(f'{str(n_days)} days')
+start_date = pd.Timestamp(latest_date) - pd.Timedelta(f'{str(n_days)} days')
+
 
 ## get map
-map_ = fn.app_functions.plot_map_columns(df,col=col, last_n_days=n_days,
+map = fn.app_functions.plot_map_columns(df,col=col, last_n_days=n_days,
 plot_map=False,return_map=True)
 
 # get just df
@@ -108,15 +121,30 @@ plot_map=False,return_map=False)
 # show map
 st.plotly_chart(map)
 
-### Plot same stat for different states
+
+########## COMPARISON LINEPLOT CODE ##########
+
+## Download pop data
+pop_df = fn.data_acquisition.get_state_pop_data()#get_state_pop_data()
+pop_df = pop_df.set_index('abbr')
+
 st.markdown("___")
 st.markdown('## ***Comparing Selected States***')
+
 
 ## select states and stats
 stat_to_compare = st.multiselect("Which statistic to compare?",options_stats,
 default=["Cases-New"])
 states_to_compare = st.multiselect("Which states to compare?",list(STATES.keys()),
 default=["NY",'MD','FL','CA','TX'])
+
+
+## Adding rolling average
+plot_rolling =  st.checkbox('Plot 7 day rolling average instead of daily data.')
+
+## Pop-normalized data
+per_capita =  st.checkbox('Plot population-adjusted metrics.')
+
 
 ## get and show plot
 plot_df = fn.app_functions.get_states_to_plot(df,state_list=states_to_compare,
@@ -125,7 +153,31 @@ plot_df = fn.app_functions.get_states_to_plot(df,state_list=states_to_compare,
                   rename_cols=True,fill_method='interpolate',
                   remove_outliers=False, state_first=True,
                   threshold_type=['0','%'], diagnose=False)
-st.plotly_chart(px.line(plot_df))
+                  
+if per_capita:
+    ## get the corresponding  population estimate
+    orig_cols = plot_df.columns
+    for state in states_to_compare:
+        state_cols = [c for c in orig_cols if state in c]
+        
+        for col in state_cols:
+            pop_adj = (plot_df[col] / pop_df.loc[state, "POP_2021"]) * 100_000
+            
+            plot_df[f"{col} (per 100K)"] = pop_adj
+    plot_df = plot_df.drop(columns=orig_cols)
+    
+    
+
+                  
+
+                  
+if plot_rolling==True:
+    plot_df = plot_df.rolling(7).mean()
+    title='7-Day Rolling Average'
+else:
+    title='Raw Daily Data'
+    
+st.plotly_chart(px.line(plot_df,title=title))
 
 
 st.markdown("___")
@@ -134,7 +186,7 @@ st.markdown("___")
 st.markdown('## ***Timeseries Forecasting by State/Statistic***')
 
 
-default_model_start = today - pd.to_timedelta('365 days')
+default_model_start = latest_date - pd.to_timedelta('365 days')
 state_name = st.selectbox('Select State', list(STATES.keys()))
 col = st.selectbox("Select statistic",options_stats)
 start_date = st.date_input('Start Date for Training Data',

@@ -3,7 +3,7 @@ import project_functions.legacy_data_acquisition as legacy
 from fsds.imports import *
 import pandas as pd
 
-import os,zipfile,json,joblib
+import os,zipfile,json,joblib,requests,us
 
 # import sys
 # sys.path.append('.')
@@ -375,6 +375,46 @@ def FULL_WORKFLOW(save_state_csvs=False,fpath_raw = r"./data_raw/",
         return DF,FINAL_STATES
     else:
         return df_states, STATES
+
+
+
+# with open('/Users/codingdojo/.secret/census.json') as f:
+#     login = json.load(f)
+# login.keys()
+
+def get_state_pop_data(use_env_var=True, api_cred_file = '/Users/codingdojo/.secret/census.json'):
+    
+    
+    if use_env_var:
+        try:
+            login = {'api-key': os.environ['CENSUS_API_KEY']}
+        except:
+            import streamlit as st
+            login = st.secrets["CENSUS_API_KEY"]
+
+    else:
+        with open(api_cred_file) as f:
+            login = json.load(f)
+            
+            
+    url_ex = f"https://api.census.gov/data/2021/pep/population?get=NAME,POP_2021&for=state:*&key={login['api-key']}"
+    resp = requests.get(url_ex)
+
+    ## Convert result to dataframe
+    res_json = resp.json()
+    pop_df = pd.DataFrame(res_json[1:],columns=res_json[0])
+    
+    ## Add state abbrev
+    pop_df["abbr"] = pop_df['NAME'].map(lambda x: us.states.lookup(x.lower()).abbr)
+    pop_df.rename({'state':'fips'},axis=1, inplace=True)
+    pop_df = pop_df.sort_values('NAME')
+    pop_df = pop_df.reset_index(drop=True)
+    
+    pop_df['POP_2021'] = pop_df['POP_2021'].astype(int)
+    pop_df['fips'] = pop_df['fips'].astype(int)
+    return pop_df
+
+
 
 
 
