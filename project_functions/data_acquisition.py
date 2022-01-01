@@ -1,6 +1,9 @@
 # !pip install -U fsds
 import project_functions.legacy_data_acquisition as legacy
-from fsds.imports import *
+# from fsds.imports import *
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
 import pandas as pd
 
 import os,zipfile,json,joblib,requests,us
