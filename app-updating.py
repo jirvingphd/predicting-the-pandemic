@@ -90,10 +90,12 @@ def load_data(WORKFLOW_BUTTON=False):
 df, STATES = load_data(WORKFLOW_BUTTON)
 options_stats= df.drop(['Deaths','Cases'],axis=1).columns.tolist()
 
+
+
 st.markdown("___")
 st.markdown("## ***Overview - Comparing All States***")
 
-##### MAP CODE
+########## MAP CODE ##########
 # calc dates for map
 # today = dt.date.today()
 # end_state = today
@@ -119,10 +121,15 @@ plot_map=False,return_map=False)
 # show map
 st.plotly_chart(map)
 
-### Plot same stat for different states
+
+########## COMPARISON LINEPLOT CODE ##########
+
+## Download pop data
+pop_df = fn.data_acquisition.get_state_pop_data()#get_state_pop_data()
+pop_df = pop_df.set_index('abbr')
+
 st.markdown("___")
 st.markdown('## ***Comparing Selected States***')
-
 
 
 ## select states and stats
@@ -135,6 +142,9 @@ default=["NY",'MD','FL','CA','TX'])
 ## Adding rolling average
 plot_rolling =  st.checkbox('Plot 7 day rolling average instead of daily data.')
 
+## Pop-normalized data
+per_capita =  st.checkbox('Plot population-adjusted metrics.')
+
 
 ## get and show plot
 plot_df = fn.app_functions.get_states_to_plot(df,state_list=states_to_compare,
@@ -143,6 +153,23 @@ plot_df = fn.app_functions.get_states_to_plot(df,state_list=states_to_compare,
                   rename_cols=True,fill_method='interpolate',
                   remove_outliers=False, state_first=True,
                   threshold_type=['0','%'], diagnose=False)
+                  
+if per_capita:
+    ## get the corresponding  population estimate
+    orig_cols = plot_df.columns
+    for state in states_to_compare:
+        state_cols = [c for c in orig_cols if state in c]
+        
+        for col in state_cols:
+            pop_adj = (plot_df[col] / pop_df.loc[state, "POP_2021"]) * 100_000
+            
+            plot_df[f"{col} (per 100K)"] = pop_adj
+    plot_df = plot_df.drop(columns=orig_cols)
+    
+    
+
+                  
+
                   
 if plot_rolling==True:
     plot_df = plot_df.rolling(7).mean()
