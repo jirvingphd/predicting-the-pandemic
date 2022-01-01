@@ -13,9 +13,9 @@ import pandas as pd
 import plotly.io as pio
 pio.templates.default = "plotly_dark"
 
-import cufflinks as cf
-cf.go_offline()
-cf.set_config_file(sharing='public',theme='solar',offline=True)
+# import cufflinks as cf
+# cf.go_offline()
+# cf.set_config_file(sharing='public',theme='solar',offline=True)
 
 
 
